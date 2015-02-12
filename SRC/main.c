@@ -48,8 +48,8 @@ int main(int argc, char **argv) {
     int goOn;
     int  k;
     int fetched;
-
-	char **ret=NULL;
+    int count;
+    char **ret=NULL;
     setparms(); /* reads the pagesize and the number of ptrs/postigs_record */
     dbopen();   /* opens or creates the three files (btree, postings, text) */
 
@@ -107,9 +107,15 @@ int main(int argc, char **argv) {
             scanf("%s", word);
             printf("k=?\n");
             scanf("%d", &k);
-		get_successors(word, k, ret);
-		
-            break;
+	    ret = (char **)malloc(sizeof(char *) * k);
+	    count = get_successors(word, k, ret);
+	    printf("found %d successors:\n",count);
+	    for(int j = 0;j < count;j ++){
+		printf("%s\n",ret[j]);
+		free(ret[j]);
+	    }
+            free(ret);
+	    break;
         case '<':
             printf("word=?\n");
             scanf("%s", word);
@@ -123,7 +129,7 @@ int main(int argc, char **argv) {
             break;
         case '#':
 	    fetched = get_fetched_count();
-            printf("Current fetched pages = %d\n",fetched);
+            printf("of reads on B-tree: %d\n",fetched);
             break;
         case 'x':
             printf("\n*** Exiting .........\n");
