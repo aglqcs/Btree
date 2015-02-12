@@ -1,0 +1,2 @@
+ strtolow(key) 是用来变成小写
+FetchPage(PageNo) 用来获取页

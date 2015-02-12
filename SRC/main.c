@@ -38,6 +38,7 @@ extern int get_successors(char *key, int k, char *result[]);
 extern char **create_string_array(size_t n);
 extern void sort_string_array(char **arr, size_t n);
 extern void free_string_array(char **arr, size_t n);
+extern int get_fetched_count();
 
 int main(int argc, char **argv) {
     char word[MAXWORDSIZE];
@@ -46,6 +47,7 @@ int main(int argc, char **argv) {
     PAGENO i;
     int goOn;
     int  k;
+    int fetched;
 
     setparms(); /* reads the pagesize and the number of ptrs/postigs_record */
     dbopen();   /* opens or creates the three files (btree, postings, text) */
@@ -118,7 +120,8 @@ int main(int argc, char **argv) {
             PrintTreeInOrder(ROOT, 0);
             break;
         case '#':
-            printf("IMPLEMENT  ME!\n");
+	    fetched = get_fetched_count();
+            printf("Current fetched page = %d\n",fetched);
             break;
         case 'x':
             printf("\n*** Exiting .........\n");

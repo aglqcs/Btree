@@ -52,6 +52,7 @@
 
 #include "def.h"
 
+extern int btReadCount; 
 extern FILE *fpbtree;
 
 struct PageHdr *FetchPage(PAGENO Page)
@@ -118,6 +119,6 @@ struct PageHdr *FetchPage(PAGENO Page)
     }
     if (PagePtr->NumKeys != 0)
         KeyListTraverser->Next = NULL;
-
+    btReadCount ++;
     return (PagePtr);
 }

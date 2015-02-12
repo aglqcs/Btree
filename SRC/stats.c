@@ -15,3 +15,8 @@ int iCount = 0;       /* number of inserted words */
 int sqCount = 0;      /* number of successful queries */
 int uqCount = 0;      /* number of unsucc. queries */
 
+int get_fetched_count(){
+	int ret = btReadCount;
+	btReadCount = 0;
+	return ret; 
+}
