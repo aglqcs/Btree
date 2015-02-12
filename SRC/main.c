@@ -49,6 +49,7 @@ int main(int argc, char **argv) {
     int  k;
     int fetched;
 
+	char **ret=NULL;
     setparms(); /* reads the pagesize and the number of ptrs/postigs_record */
     dbopen();   /* opens or creates the three files (btree, postings, text) */
 
@@ -106,7 +107,8 @@ int main(int argc, char **argv) {
             scanf("%s", word);
             printf("k=?\n");
             scanf("%d", &k);
-            printf("IMPLEMENT  ME!\n");
+		get_successors(word, k, ret);
+		
             break;
         case '<':
             printf("word=?\n");
