@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
             break;
         case '#':
 	    fetched = get_fetched_count();
-            printf("Current fetched page = %d\n",fetched);
+            printf("Current fetched pages = %d\n",fetched);
             break;
         case 'x':
             printf("\n*** Exiting .........\n");
