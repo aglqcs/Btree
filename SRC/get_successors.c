@@ -1,4 +1,5 @@
 #include "def.h"
+extern void strtolow(char *);
 extern struct PageHdr *FetchPage(PAGENO Page);
 extern PAGENO treesearch_page(PAGENO PageNo, char *key);
 extern void printKey(struct KeyRecord *p);
@@ -21,6 +22,7 @@ int get_successors(char *key, int k, char *result[]) {
 	int print_results = 0;
 	
 	int pos;
+	strtolow(key);
 
 	PAGENO search_result = treesearch_page(ROOT, key);
 	if(search_result < 0){
@@ -36,14 +38,23 @@ int get_successors(char *key, int k, char *result[]) {
 		return -1;
 	}
 	pos = FindInsertionPosition(record, key, &Found,PagePtr->NumKeys,Count);
+	int looptime = 0;
 	while(print_results < k && print_results >= 0){
-		//if(Found == TRUE){
-                 	 for(i = 0;i < pos && record != NULL;i ++){
-               		 /* after this loop the record will point to the next of record*/
-                       		 record = record->Next;
-                  	 }
-                //}
+                  for(i = 0;i < pos ;i ++){
+               	 /* after this loop the record will point to the next of record*/
+                       	record = record->Next;
+			if( record == NULL ){
+			/* if the pos in the next leaf page */
+				PagePtr = FetchPage(PagePtr->PgNumOfNxtLfPg);
+				record = PagePtr->KeyListPtr;
+				/* if still NULL means reach the end of the tree*/
+				if(record == NULL ){
+					break;
+				}
+			}
+                   }
 		if(record == NULL){
+			printf("exit while loop at %d pos = %d numkeys = %d\n",++looptime,pos,PagePtr->NumKeys);
 			break;	
 		}
 	        while(record != NULL){

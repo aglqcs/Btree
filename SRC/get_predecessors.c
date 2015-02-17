@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "def.h"
+extern void strtolow(char *);
 extern PAGENO FindNumPagesInTree(void);
 extern PAGENO find_father(PAGENO current, char *key);
 extern struct PageHdr *FetchPage(PAGENO Page);
@@ -110,6 +111,8 @@ int get_predecessors(char *key, int k, char *result[]) {
 	result_max_count = k;
 	int ret_value;
 	PAGENO bound = FindNumPagesInTree();
+	strtolow(key);
+
 	/* get the first leaf of result */
 	PAGENO search_result = my_treesearch_page(&father,ROOT,key);
 	if(search_result < 1 && search_result > bound){
