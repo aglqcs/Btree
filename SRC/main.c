@@ -107,6 +107,10 @@ int main(int argc, char **argv) {
             scanf("%s", word);
             printf("k=?\n");
             scanf("%d", &k);
+	    if(k < 0){
+		printf("k should be positive not %d\n",k);
+		break;
+	    }
 	    ret = (char **)malloc(sizeof(char *) * k);
 	    count = get_successors(word, k, ret);
 	    printf("found %d successors:\n",count);
@@ -121,6 +125,10 @@ int main(int argc, char **argv) {
             scanf("%s", word);
             printf("k=?\n");
             scanf("%d", &k);
+            if(k < 0){
+                printf("k should be positive not %d\n",k);
+                break;
+            }
             ret = (char **)malloc(sizeof(char *) * k);
 	    for(int j = 0;j < k;j ++){
 		ret[j] = (char *)malloc(MAXWORDSIZE);

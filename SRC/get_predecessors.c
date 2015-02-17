@@ -19,7 +19,17 @@ int result_count = 0;
 int result_max_count;
 
 
-void exit_function(){
+void exit_function(char **dest){
+	for(int i = 0; i < result_count;i ++){
+		for(int j = i + 1;j < result_count;j ++){
+			if(strcmp(dest[i],dest[j]) < 0){
+				char t[MAXWORDSIZE];
+				strcpy(t,dest[i]);
+				strcpy(dest[i],dest[j]);
+				strcpy(dest[j],t);
+			}
+		}
+	}
 	current_page = 0;
 	result_count = 0;
 	memset(current_key,0,MAXWORDSIZE);
@@ -98,15 +108,12 @@ int get_predecessors(char *key, int k, char *result[]) {
 	PAGENO father = 0;
 	int length = 0;
 	result_max_count = k;
-	int ret;
+	int ret_value;
 	PAGENO bound = FindNumPagesInTree();
 	/* get the first leaf of result */
 	PAGENO search_result = my_treesearch_page(&father,ROOT,key);
 	if(search_result < 1 && search_result > bound){
-		 FreePage(PagePtr);
-	       	 ret = result_count;
-       		 exit_function();
-       		 return ret;
+		goto ret;
 	}
 	PagePtr = FetchPage(search_result);
 	record = PagePtr->KeyListPtr;	
@@ -117,11 +124,8 @@ int get_predecessors(char *key, int k, char *result[]) {
 		father = find_father(current_page,current_key);
 		/* this is a non-leaf page */
 		if(father < 1 && father > bound){
-                	 FreePage(PagePtr);
-               		 ret = result_count;
-                	 exit_function();
-                	 return ret;
-       		}
+       			goto ret;
+		}
 		PagePtr = FetchPage(father);
 		current_page = PagePtr->PgNum;
 		record = PagePtr->KeyListPtr;
@@ -137,7 +141,7 @@ int get_predecessors(char *key, int k, char *result[]) {
 
 ret:
        	FreePage(PagePtr);
-	ret = result_count;
-	exit_function();
-        return ret;
+	ret_value = result_count;
+	exit_function(result);
+        return ret_value;
 }
