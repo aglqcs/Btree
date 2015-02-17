@@ -45,7 +45,6 @@ alewife
 word=?
 k=?
 k should be positive not -1
-
 	*** These are your commands .........
 	"C" to scan the tree
 	"i" to insert
@@ -60,7 +59,6 @@ k should be positive not -1
 word=?
 k=?
 k should be positive not -1
-
 	*** These are your commands .........
 	"C" to scan the tree
 	"i" to insert
@@ -74,7 +72,17 @@ k should be positive not -1
 	"x" to exit
 word=?
 k=?
-found 0 successors:
+found 10 successors:
+zebraic
+zebralike
+zebrass
+zebrawood
+zebrina
+zebrine
+zebrinny
+zebroid
+zebrula
+zebrule
 
 	*** These are your commands .........
 	"C" to scan the tree

@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
             printf("k=?\n");
             scanf("%d", &k);
 	    if(k < 0){
-		printf("k should be positive not %d\n",k);
+		printf("k should be positive not %d",k);
 		break;
 	    }
 	    ret = (char **)malloc(sizeof(char *) * k);
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
             printf("k=?\n");
             scanf("%d", &k);
             if(k < 0){
-                printf("k should be positive not %d\n",k);
+                printf("k should be positive not %d",k);
                 break;
             }
             ret = (char **)malloc(sizeof(char *) * k);
