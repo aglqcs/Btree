@@ -121,8 +121,18 @@ int main(int argc, char **argv) {
             scanf("%s", word);
             printf("k=?\n");
             scanf("%d", &k);
-            printf("IMPLEMENT  ME!\n");
-            break;
+            ret = (char **)malloc(sizeof(char *) * k);
+	    for(int j = 0;j < k;j ++){
+		ret[j] = (char *)malloc(MAXWORDSIZE);
+	    }
+            count = get_predecessors(word, k, ret);
+            printf("found %d predecessors:\n",count);
+            for(int j = count - 1;j >= 0;j --){
+                printf("%s\n",ret[j]);
+                free(ret[j]);
+            }
+            free(ret);
+	    break;
         case 'T':
             printf("\n*** Printing tree in order .........\n");
             PrintTreeInOrder(ROOT, 0);

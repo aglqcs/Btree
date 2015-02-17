@@ -14,7 +14,7 @@ SRC=main.c PrintTree.c CompareKeys.c\
     getrec.c freerec.c initializePostingsFile.c isfull.c \
 	postStats.c printTreeInOrder.c deleteKey.c strdist.c \
 	get_successors.c get_predecessors.c stats.c \
-	string_array.c
+	string_array.c find_father.c
 
 GENUTILSRC=strsave.c ffsize.c strtolow.c
 SRC1=getword.c iscommon.c binsearch.c check_word.c pr_msg.c
