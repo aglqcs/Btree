@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 	    }
             count = get_predecessors(word, k, ret);
             printf("found %d predecessors:\n",count);
-            for(int j = count - 1;j >= 0;j --){
+            for(int j = 0;j < count;j ++){
                 printf("%s\n",ret[j]);
                 free(ret[j]);
             }

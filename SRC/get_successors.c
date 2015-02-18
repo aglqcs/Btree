@@ -6,7 +6,6 @@ extern void printKey(struct KeyRecord *p);
 extern int FreePage(struct PageHdr *PagePtr);
 extern int FindInsertionPosition(struct KeyRecord *KeyListTraverser, char *Key,
                           int *Found, NUMKEYS NumKeys, int Count);
-/* TODO seems to have bug, try keyword 'ale' */
 /*
 	return values
 		-1  : when enter a error page or invalid record

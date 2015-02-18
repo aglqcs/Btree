@@ -1,150 +1,98 @@
 #include <stdio.h>
 #include <string.h>
 #include "def.h"
-extern void strtolow(char *);
-extern PAGENO FindNumPagesInTree(void);
-extern PAGENO find_father(PAGENO current, char *key);
+
 extern struct PageHdr *FetchPage(PAGENO Page);
-extern PAGENO treesearch_page(PAGENO PageNo, char *key);
-extern void printKey(struct KeyRecord *p);
 extern int FreePage(struct PageHdr *PagePtr);
-extern int FindInsertionPosition(struct KeyRecord *KeyListTraverser, char *Key,
-                          int *Found, NUMKEYS NumKeys, int Count);
-extern PAGENO FindPageNumOfChild(struct PageHdr *PagePtr, struct KeyRecord *KeyListPtr, char *key,
-                                              NUMKEYS NumKey);
 
-char **temp; //global variables to store search result
 char current_key[MAXWORDSIZE];
-PAGENO current_page = 0;
-int result_count = 0;
-int result_max_count;
+int current_result_count = 0;
+int max_result_count = 0;
+char **ref = NULL;
 
-
-void exit_function(char **dest){
-	for(int i = 0; i < result_count;i ++){
-		for(int j = i + 1;j < result_count;j ++){
-			if(strcmp(dest[i],dest[j]) < 0){
+void write_list(char *key){
+	strcpy(ref[current_result_count],key);
+	current_result_count ++;
+}
+void exit_function(struct PageHdr *PagePtr){
+	/* on exit: sort the result list and clear all global variables*/
+	for(int i = 0;i < current_result_count; i ++){
+		for(int j = i + 1;j < current_result_count;j ++){
+			if( strcmp(ref[i], ref[j]) > 0 ){
 				char t[MAXWORDSIZE];
-				strcpy(t,dest[i]);
-				strcpy(dest[i],dest[j]);
-				strcpy(dest[j],t);
+				strcpy(t,ref[i]);
+				strcpy(ref[i],ref[j]);
+				strcpy(ref[j],t);
 			}
 		}
 	}
-	current_page = 0;
-	result_count = 0;
+	current_result_count = 0;
+	max_result_count = 0;
+	ref = NULL;
 	memset(current_key,0,MAXWORDSIZE);
+	free(PagePtr);
 }
 
-void print_page(struct PageHdr *PagePtr){
-	printf("-----PAGE START-----\n");
-	struct KeyRecord *record = PagePtr->KeyListPtr;
-	printf("%c :",PagePtr->PgTypeID);
-	while(record != NULL){
-		printf("%s  ",record->StoredKey);
-		record = record->Next;
+void find(struct KeyRecord *record, struct PageHdr *PagePtr) {
+	if (current_result_count  == max_result_count) {
+		return;
 	}
-	printf("\n--------END--------\n");
-}
-int write_list(int max_length,char **dest, struct PageHdr *PagePtr, char *endwords){
-	if(PagePtr->PgTypeID == 'N'){
-		printf("error: should not read a non-leaf page\n");
-		return -1;
-	}
-	if(current_page == PagePtr->PgNum)
-		return 0;
-	int current_length = 0;
-	struct KeyRecord *start = PagePtr->KeyListPtr;
-	temp = (char **)malloc(max_length * sizeof(char *));
-	for(int i = 0;i < max_length;i ++){
-		temp[i] = (char *)malloc(MAXWORDSIZE);
-	}
-	struct KeyRecord *p = start;
-	int index = 0;
-	while( strcmp(p->StoredKey,endwords) != 0){
-		strcpy(temp[index],p->StoredKey);
-		index = (index + 1) % max_length;
-		current_length = (current_length == max_length) ? max_length : (current_length + 1);
-		p = p->Next;
-		if(p == NULL){
-			PAGENO next = PagePtr->PgNumOfNxtLfPg;
-			PagePtr = FetchPage(next);
-			p = PagePtr->KeyListPtr;
+	/* if this is a leaf page
+			if the record go end of the leaf, return
+			recursive try next record
+			write this record to result
+			because first try right record(bigger record), after that write current record.
+			The result list will always contain records that more close to the key.
+	   if a non-leaf page
+			try next leaf
+			if end of the leaf, need to try a bigger record, so go to the right most child
+			else need to try a smaller record, go to the PageNo saved in first record 
+	*/
+	struct PageHdr *next_search;
+	if( PagePtr->PgTypeID == 'L'){
+		if( record == NULL) return;
+		else{
+			 if(strcmp(current_key, record->StoredKey) > 0){
+                       		find(record->Next, PagePtr);
+                     		if (current_result_count == max_result_count) {
+                               		return;
+                       		}
+				write_list(record->StoredKey);
+               		 }
 		}
 	}
-	        strcpy(current_key,start->StoredKey);
-        for(int i = 0; i < current_length; i++){
-                strcpy(dest[result_count + i],temp[current_length - 1 - i]);
-        }
-        result_count += current_length;
-	for(int i = 0;i < max_length;i ++){
-		free(temp[i]);
+	else{
+		if(record != NULL){	
+                        if(strcmp(current_key, record->StoredKey) > 0){
+                               	find(record->Next, PagePtr);
+                               	if (current_result_count == max_result_count) {
+                                       	return;
+                               	 }
+        	        }
+			next_search = FetchPage(record->PgNum);		
+		}
+		else{
+			next_search = FetchPage(PagePtr->PtrToFinalRtgPg);
+		}
+                find(next_search->KeyListPtr,next_search); 
 	}
-	free(temp);
-	return current_length;
+	return;
 }
-PAGENO my_treesearch_page(PAGENO *fatherpage,PAGENO PageNo, char *key) {
-    PAGENO result;
-    struct PageHdr *PagePtr = FetchPage(PageNo);
-    if (IsLeaf(PagePtr)) { /* found leaf */
-        result = PageNo;
-    } else if ((IsNonLeaf(PagePtr)) && (PagePtr->NumKeys == 0)) {
-        result = my_treesearch_page(fatherpage,FIRSTLEAFPG, key);
-    } else if ((IsNonLeaf(PagePtr)) && (PagePtr->NumKeys > 0)) {
-        PAGENO ChildPage = FindPageNumOfChild(PagePtr, PagePtr->KeyListPtr, key,
-                                              PagePtr->NumKeys);
-	*fatherpage = PagePtr->PgNum;
-        result = my_treesearch_page(fatherpage,ChildPage, key);
-    } else {
-        assert(0 && "this should never happen");
-    }
-    FreePage(PagePtr);
-    return result;
-}
-
-
 int get_predecessors(char *key, int k, char *result[]) {
-	struct PageHdr *PagePtr = NULL;
-        struct KeyRecord *record = NULL;
-	PAGENO father = 0;
-	int length = 0;
-	result_max_count = k;
-	int ret_value;
-	PAGENO bound = FindNumPagesInTree();
-	strtolow(key);
-
-	/* get the first leaf of result */
-	PAGENO search_result = my_treesearch_page(&father,ROOT,key);
-	if(search_result < 1 && search_result > bound){
-		goto ret;
+	max_result_count = k;
+	ref = result;
+	strcpy(current_key,key);
+	for(int i = 0;i < max_result_count;i ++){
+		ref[i] = (char *)malloc(MAXWORDSIZE);
 	}
-	PagePtr = FetchPage(search_result);
-	record = PagePtr->KeyListPtr;	
-	length = write_list(k,result,PagePtr,key);
-	if(length == 0) goto ret;
-	current_page = FetchPage(father)->PgNum;
-	while(result_count < k ){
-		father = find_father(current_page,current_key);
-		/* this is a non-leaf page */
-		if(father < 1 && father > bound){
-       			goto ret;
-		}
-		PagePtr = FetchPage(father);
-		current_page = PagePtr->PgNum;
-		record = PagePtr->KeyListPtr;
-		/* will get the leaf which stores a word smaller than key*/
-		while( PagePtr->PgTypeID != 'L'){
-			PagePtr = FetchPage(record->PgNum);
-			record = PagePtr->KeyListPtr;
-		}
-		record = PagePtr->KeyListPtr;
-		length = write_list(k - result_count,result, PagePtr, current_key);
-		if(length == 0) goto ret;
+	/* start from root */
+	struct PageHdr *PagePtr = FetchPage(ROOT);	
+	if (PagePtr != NULL) {
+		struct KeyRecord *record = PagePtr->KeyListPtr;
+		find(record, PagePtr);
 	}
-
-ret:
-       	FreePage(PagePtr);
-	ret_value = result_count;
-	exit_function(result);
-        return ret_value;
+	/* save return value, then clear all global variables for next time */
+	int ret_value = current_result_count;  
+	exit_function(PagePtr);
+	return ret_value;
 }
